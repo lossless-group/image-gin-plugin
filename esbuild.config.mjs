@@ -27,13 +27,15 @@ const external = [
   ...builtins
 ];
 
-// First, build the CSS file
+// Build the CSS file
 await esbuild.build({
-  entryPoints: ['src/styles/plugin-basics.css'],
+  entryPoints: ['src/styles/current-file-modal.css'],
   bundle: true,
   minify: isProduction,
   outfile: 'styles.css',
   loader: { '.css': 'css' },
+  logLevel: 'info',
+  sourcemap: !isProduction ? 'inline' : false
 });
 
 const context = await esbuild.context({

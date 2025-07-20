@@ -1,454 +1,399 @@
-// src/modals/CurrentFileModal.ts
+import { App, Modal, Setting, Notice, TFile } from 'obsidian';
+import ImageGinPlugin from '../../main';
+import { extractFrontmatter, formatFrontmatter, updateFileFrontmatter } from '../utils/yamlFrontmatter';
+import { RecraftImageService } from '../services/recraftImageService';
+import { STYLE_OPTIONS } from '../settings/settings';
+import type { ImageSize } from '../types';
 
-import { App, Modal, Notice, Editor, Setting } from 'obsidian';
-import currentFileService from '../services/currentFileService';
-import { textProcessingService } from '../services/textProcessingService';
-import { selectionService } from '../services/selectionService';
+export function openCurrentFileModal(
+    app: App, 
+    plugin: ImageGinPlugin
+): CurrentFileModal {
+    return new CurrentFileModal(app, plugin);
+}
 
 export class CurrentFileModal extends Modal {
-    private editor: Editor;
+    private plugin: ImageGinPlugin;
+    private imagePrompt: string = '';
+    private selectedSizes: Set<string> = new Set();
+    private writeToFrontmatter: boolean = true;
+    private isGenerating: boolean = false;
+    private progressEl: HTMLElement | null = null;
+    private currentFile: TFile | null = null;
 
-    constructor(app: App, editor: Editor) {
+    constructor(app: App, plugin: ImageGinPlugin) {
         super(app);
-        this.editor = editor;
+        this.plugin = plugin;
+        this.currentFile = this.app.workspace.getActiveFile();
     }
 
-    onOpen() {
+    async onOpen(): Promise<void> {
         const { contentEl } = this;
         contentEl.empty();
+        contentEl.addClass('image-gin-modal');
 
-        contentEl.createEl('h2', { text: 'Current File Operations' });
+        // Load CSS
+        this.loadStyles();
 
-        // Current File Service Operations
-        this.createFileOperationsSection(contentEl);
+        // Extract existing image_prompt from frontmatter
+        await this.loadExistingPrompt();
+
+        // Render modal content
+        this.renderModalContent();
+    }
+
+    private loadStyles(): void {
+        // The CSS file should be loaded by the plugin, but we can ensure it's applied
+        const existingStyle = document.getElementById('image-gin-modal-styles');
+        if (!existingStyle) {
+            const style = document.createElement('link');
+            style.id = 'image-gin-modal-styles';
+            style.rel = 'stylesheet';
+            style.href = 'app://obsidian.md/src/styles/current-file-modal.css';
+            document.head.appendChild(style);
+        }
+    }
+
+    private async loadExistingPrompt(): Promise<void> {
+        if (!this.currentFile) return;
+
+        try {
+            const content = await this.app.vault.read(this.currentFile);
+            const frontmatter = extractFrontmatter(content);
+            
+            if (frontmatter && frontmatter[this.plugin.settings.imagePromptKey]) {
+                this.imagePrompt = frontmatter[this.plugin.settings.imagePromptKey];
+            }
+        } catch (error) {
+            console.error('Error loading existing prompt:', error);
+        }
+    }
+
+    private renderModalContent(): void {
+        const { contentEl } = this;
+
+        // Header
+        const headerEl = contentEl.createDiv('image-gin-header');
+        headerEl.createEl('h2', { text: 'Generate Images', cls: 'image-gin-title' });
+
+        // Image Prompt Section
+        this.renderPromptSection(contentEl);
+
+        // Image Size Selection Section
+        this.renderSizeSection(contentEl);
+
+        // Style Display Section
+        this.renderStyleSection(contentEl);
+
+        // Frontmatter Option Section
+        this.renderFrontmatterSection(contentEl);
+
+        // Progress Section (initially hidden)
+        this.renderProgressSection(contentEl);
+
+        // Generate Button
+        this.renderGenerateButton(contentEl);
+    }
+
+    private renderPromptSection(containerEl: HTMLElement): void {
+        const section = containerEl.createDiv('image-gin-section');
+        const header = section.createDiv('image-gin-section-header');
+        header.createEl('span', { text: 'Image Prompt' });
+
+        const content = section.createDiv('image-gin-section-content');
         
-        // Text Processing Operations
-        this.createTextProcessingSection(contentEl);
+        const textarea = content.createEl('textarea', {
+            cls: 'image-gin-textarea',
+            attr: {
+                placeholder: this.imagePrompt ? 'Edit your image prompt...' : 'Enter an image prompt...',
+                rows: '4'
+            }
+        });
         
-        // Selection Operations
-        this.createSelectionOperationsSection(contentEl);
+        textarea.value = this.imagePrompt;
+        textarea.addEventListener('input', () => {
+            this.imagePrompt = textarea.value;
+        });
     }
 
-    private createFileOperationsSection(contentEl: HTMLElement) {
-        const section = contentEl.createEl('div', { cls: 'modal-section' });
-        section.createEl('h3', { text: 'File Operations' });
+    private renderSizeSection(containerEl: HTMLElement): void {
+        const section = containerEl.createDiv('image-gin-section');
+        const header = section.createDiv('image-gin-section-header');
+        header.createEl('span', { text: 'Image Sizes' });
 
-        // List Headers Button
-        new Setting(section)
-            .setName('List Headers')
-            .setDesc('Extract all headers from the current file')
-            .addButton(button => 
-                button
-                    .setButtonText('List Headers')
-                    .onClick(() => {
-                        const content = this.editor.getValue();
-                        const headers = currentFileService.listHeaders(content);
-                        if (headers.length > 0) {
-                            new Notice(`Found ${headers.length} headers:\n${headers.join('\n')}`);
+        const content = section.createDiv('image-gin-section-content');
+        const toggleGroup = content.createDiv('image-gin-toggle-group');
+
+        // Get available sizes from settings
+        const availableSizes = this.plugin.settings.imageSizes || [];
+
+        availableSizes.forEach((size: ImageSize) => {
+            const toggleItem = toggleGroup.createDiv('image-gin-toggle-item');
+            
+            new Setting(toggleItem)
+                .setName(size.label)
+                .setDesc(`${size.width} × ${size.height}`)
+                .addToggle(toggle => {
+                    toggle.setValue(this.selectedSizes.has(size.id));
+                    toggle.onChange((value) => {
+                        if (value) {
+                            this.selectedSizes.add(size.id);
                         } else {
-                            new Notice('No headers found in file');
+                            this.selectedSizes.delete(size.id);
                         }
-                    })
-            );
-
-        // Add Text Section
-        let addTextInput = '';
-        let addTextPosition = 0;
-        new Setting(section)
-            .setName('Add Text')
-            .setDesc('Add text at a specific position')
-            .addText(text => 
-                text
-                    .setPlaceholder('Text to add')
-                    .onChange((value) => { addTextInput = value; })
-            )
-            .addText(text => 
-                text
-                    .setPlaceholder('Position (0 for start)')
-                    .onChange((value) => { 
-                        const num = parseInt(value);
-                        addTextPosition = isNaN(num) ? 0 : num;
-                    })
-            )
-            .addButton(button => 
-                button
-                    .setButtonText('Add Text')
-                    .onClick(() => {
-                        if (!addTextInput) {
-                            new Notice('Please enter text to add');
-                            return;
-                        }
-                        const content = this.editor.getValue();
-                        const newContent = currentFileService.addText(content, addTextInput, addTextPosition);
-                        this.editor.setValue(newContent);
-                        new Notice('Text added successfully');
-                    })
-            );
-
-        // Delete Text Section
-        let deleteStart = 0;
-        let deleteEnd = 0;
-        new Setting(section)
-            .setName('Delete Text Range')
-            .setDesc('Delete text between two positions')
-            .addText(text => 
-                text
-                    .setPlaceholder('Start position')
-                    .onChange((value) => { 
-                        const num = parseInt(value);
-                        deleteStart = isNaN(num) ? 0 : num;
-                    })
-            )
-            .addText(text => 
-                text
-                    .setPlaceholder('End position')
-                    .onChange((value) => { 
-                        const num = parseInt(value);
-                        deleteEnd = isNaN(num) ? 0 : num;
-                    })
-            )
-            .addButton(button => 
-                button
-                    .setButtonText('Delete Text')
-                    .onClick(() => {
-                        if (deleteEnd <= deleteStart) {
-                            new Notice('End position must be greater than start position');
-                            return;
-                        }
-                        const content = this.editor.getValue();
-                        const newContent = currentFileService.deleteText(content, deleteStart, deleteEnd);
-                        this.editor.setValue(newContent);
-                        new Notice('Text deleted successfully');
-                    })
-            );
-
-        // Extract YAML Button
-        new Setting(section)
-            .setName('Extract YAML Frontmatter')
-            .setDesc('Extract YAML frontmatter from the current file')
-            .addButton(button => 
-                button
-                    .setButtonText('Extract YAML')
-                    .onClick(() => {
-                        const content = this.editor.getValue();
-                        const yaml = currentFileService.extractYamlFrontmatter(content);
-                        if (yaml) {
-                            new Notice(`YAML Frontmatter:\n${yaml}`);
-                        } else {
-                            new Notice('No YAML frontmatter found');
-                        }
-                    })
-            );
-
-        // Change YAML Value Section
-        let yamlKey = '';
-        let yamlValue = '';
-        new Setting(section)
-            .setName('Change YAML Value')
-            .setDesc('Update a key-value pair in YAML frontmatter')
-            .addText(text => 
-                text
-                    .setPlaceholder('YAML key')
-                    .onChange((value) => { yamlKey = value; })
-            )
-            .addText(text => 
-                text
-                    .setPlaceholder('New value')
-                    .onChange((value) => { yamlValue = value; })
-            )
-            .addButton(button => 
-                button
-                    .setButtonText('Update YAML')
-                    .onClick(() => {
-                        if (!yamlKey || !yamlValue) {
-                            new Notice('Please enter both key and value');
-                            return;
-                        }
-                        const content = this.editor.getValue();
-                        const yaml = currentFileService.extractYamlFrontmatter(content);
-                        if (yaml) {
-                            const updatedYaml = currentFileService.changeYamlValue(yaml, yamlKey, yamlValue);
-                            const newContent = content.replace(/^---\n[\s\S]+?\n---/, `---\n${updatedYaml}\n---`);
-                            this.editor.setValue(newContent);
-                            new Notice('YAML updated successfully');
-                        } else {
-                            new Notice('No YAML frontmatter found');
-                        }
-                    })
-            );
+                    });
+                });
+        });
     }
 
-    private createTextProcessingSection(contentEl: HTMLElement) {
-        const section = contentEl.createEl('div', { cls: 'modal-section' });
-        section.createEl('h3', { text: 'Text Processing Operations' });
+    private renderStyleSection(containerEl: HTMLElement): void {
+        const section = containerEl.createDiv('image-gin-section');
+        const header = section.createDiv('image-gin-section-header');
+        header.createEl('span', { text: 'Style Configuration' });
 
-        // Find Matches Section
-        let searchPattern = '';
-        new Setting(section)
-            .setName('Find Matches')
-            .setDesc('Find all matches of a regex pattern')
-            .addText(text => 
-                text
-                    .setPlaceholder('Regex pattern (e.g., \\d+)')
-                    .onChange((value) => { searchPattern = value; })
-            )
-            .addButton(button => 
-                button
-                    .setButtonText('Find Matches')
-                    .onClick(() => {
-                        if (!searchPattern) {
-                            new Notice('Please enter a search pattern');
-                            return;
-                        }
-                        try {
-                            const content = this.editor.getValue();
-                            const regex = new RegExp(searchPattern, 'g');
-                            const matches = textProcessingService.findMatches(content, regex);
-                            new Notice(`Found ${matches.length} matches`);
-                        } catch (error) {
-                            new Notice('Invalid regex pattern');
-                        }
-                    })
-            );
-
-        // Replace All Section
-        let replacePattern = '';
-        let replaceWith = '';
-        new Setting(section)
-            .setName('Replace All')
-            .setDesc('Replace all instances of a pattern')
-            .addText(text => 
-                text
-                    .setPlaceholder('Pattern to replace')
-                    .onChange((value) => { replacePattern = value; })
-            )
-            .addText(text => 
-                text
-                    .setPlaceholder('Replace with')
-                    .onChange((value) => { replaceWith = value; })
-            )
-            .addButton(button => 
-                button
-                    .setButtonText('Replace All')
-                    .onClick(() => {
-                        if (!replacePattern) {
-                            new Notice('Please enter a pattern to replace');
-                            return;
-                        }
-                        try {
-                            const content = this.editor.getValue();
-                            const regex = new RegExp(replacePattern, 'g');
-                            const result = textProcessingService.replaceAll(content, regex, replaceWith);
-                            if (result.changed) {
-                                this.editor.setValue(result.content);
-                                new Notice(`Replaced ${result.stats.itemsProcessed} instances`);
-                            } else {
-                                new Notice('No matches found to replace');
-                            }
-                        } catch (error) {
-                            new Notice('Invalid regex pattern');
-                        }
-                    })
-            );
-
-        // Remove Duplicate Lines Button
-        new Setting(section)
-            .setName('Remove Duplicate Lines')
-            .setDesc('Remove duplicate lines from the file')
-            .addButton(button => 
-                button
-                    .setButtonText('Remove Duplicates')
-                    .onClick(() => {
-                        const content = this.editor.getValue();
-                        const result = textProcessingService.removeDuplicateLines(content);
-                        if (result.changed) {
-                            this.editor.setValue(result.content);
-                            new Notice(`Removed ${result.stats.itemsProcessed} duplicate lines`);
-                        } else {
-                            new Notice('No duplicate lines found');
-                        }
-                    })
-            );
-
-        // Normalize Whitespace Button
-        new Setting(section)
-            .setName('Normalize Whitespace')
-            .setDesc('Clean up and normalize whitespace in the file')
-            .addButton(button => 
-                button
-                    .setButtonText('Normalize Whitespace')
-                    .onClick(() => {
-                        const content = this.editor.getValue();
-                        const result = textProcessingService.normalizeWhitespace(content);
-                        if (result.changed) {
-                            this.editor.setValue(result.content);
-                            new Notice('Whitespace normalized successfully');
-                        } else {
-                            new Notice('No whitespace changes needed');
-                        }
-                    })
-            );
+        const content = section.createDiv('image-gin-section-content');
+        
+        const styleSettings = this.plugin.settings.style;
+        
+        if (styleSettings.useCustomStyle) {
+            content.createEl('p', { 
+                text: `Using Custom Style: ${styleSettings.customStyleId || 'Not specified'}`,
+                cls: 'style-display'
+            });
+        } else {
+            const baseStyle = styleSettings.presetStyle.base;
+            const substyle = styleSettings.presetStyle.substyle;
+            const styleGroup = STYLE_OPTIONS[baseStyle];
+            
+            if (styleGroup) {
+                const substyleLabel = substyle 
+                    ? styleGroup.substyles.find(s => s.id === substyle)?.label || substyle
+                    : 'Default';
+                
+                content.createEl('p', { 
+                    text: `${styleGroup.label} - ${substyleLabel}`,
+                    cls: 'style-display'
+                });
+            } else {
+                content.createEl('p', { 
+                    text: `Style: ${baseStyle}`,
+                    cls: 'style-display'
+                });
+            }
+        }
     }
 
-    private createSelectionOperationsSection(contentEl: HTMLElement) {
-        const section = contentEl.createEl('div', { cls: 'modal-section' });
-        section.createEl('h3', { text: 'Selection Operations' });
+    private renderFrontmatterSection(containerEl: HTMLElement): void {
+        const section = containerEl.createDiv('image-gin-section');
+        const header = section.createDiv('image-gin-section-header');
+        header.createEl('span', { text: 'Frontmatter Options' });
 
-        // Text Case Transformations
-        new Setting(section)
-            .setName('Text Case')
-            .setDesc('Transform selected text case')
-            .addButton(button => 
-                button
-                    .setButtonText('UPPERCASE')
-                    .onClick(() => {
-                        const selection = this.editor.getSelection();
-                        if (!selection) {
-                            new Notice('Please select some text first');
-                            return;
-                        }
-                        const result = selectionService.toUpperCase(selection);
-                        this.editor.replaceSelection(result.processedText);
-                        new Notice('Text converted to uppercase');
-                    })
-            )
-            .addButton(button => 
-                button
-                    .setButtonText('lowercase')
-                    .onClick(() => {
-                        const selection = this.editor.getSelection();
-                        if (!selection) {
-                            new Notice('Please select some text first');
-                            return;
-                        }
-                        const result = selectionService.toLowerCase(selection);
-                        this.editor.replaceSelection(result.processedText);
-                        new Notice('Text converted to lowercase');
-                    })
-            )
-            .addButton(button => 
-                button
-                    .setButtonText('Title Case')
-                    .onClick(() => {
-                        const selection = this.editor.getSelection();
-                        if (!selection) {
-                            new Notice('Please select some text first');
-                            return;
-                        }
-                        const result = selectionService.toTitleCase(selection);
-                        this.editor.replaceSelection(result.processedText);
-                        new Notice('Text converted to title case');
-                    })
-            );
-
-        // Wrap Lines Section
-        let wrapPrefix = '> ';
-        let wrapSuffix = '';
-        new Setting(section)
-            .setName('Wrap Lines')
-            .setDesc('Wrap each line in selection with prefix/suffix')
-            .addText(text => 
-                text
-                    .setPlaceholder('Prefix (default: "> ")')
-                    .onChange((value) => { wrapPrefix = value || '> '; })
-            )
-            .addText(text => 
-                text
-                    .setPlaceholder('Suffix (optional)')
-                    .onChange((value) => { wrapSuffix = value; })
-            )
-            .addButton(button => 
-                button
-                    .setButtonText('Wrap Lines')
-                    .onClick(() => {
-                        const selection = this.editor.getSelection();
-                        if (!selection) {
-                            new Notice('Please select some text first');
-                            return;
-                        }
-                        const result = selectionService.wrapLines(selection, wrapPrefix, wrapSuffix);
-                        this.editor.replaceSelection(result.processedText);
-                        new Notice(`Wrapped ${result.stats.linesProcessed} lines`);
-                    })
-            );
-
-        // Line Operations
-        new Setting(section)
-            .setName('Line Operations')
-            .setDesc('Various line-based operations')
-            .addButton(button => 
-                button
-                    .setButtonText('Remove Empty Lines')
-                    .onClick(() => {
-                        const selection = this.editor.getSelection();
-                        if (!selection) {
-                            new Notice('Please select some text first');
-                            return;
-                        }
-                        const result = selectionService.removeEmptyLines(selection);
-                        this.editor.replaceSelection(result.processedText);
-                        new Notice(`Removed ${result.stats.linesProcessed} empty lines`);
-                    })
-            )
-            .addButton(button => 
-                button
-                    .setButtonText('Sort Lines')
-                    .onClick(() => {
-                        const selection = this.editor.getSelection();
-                        if (!selection) {
-                            new Notice('Please select some text first');
-                            return;
-                        }
-                        const result = selectionService.sortLines(selection);
-                        this.editor.replaceSelection(result.processedText);
-                        new Notice(`Sorted ${result.stats.linesProcessed} lines`);
-                    })
-            )
-            .addButton(button => 
-                button
-                    .setButtonText('Trim Lines')
-                    .onClick(() => {
-                        const selection = this.editor.getSelection();
-                        if (!selection) {
-                            new Notice('Please select some text first');
-                            return;
-                        }
-                        const result = selectionService.trimLines(selection);
-                        this.editor.replaceSelection(result.processedText);
-                        new Notice('Lines trimmed successfully');
-                    })
-            );
-
-        // Add Line Numbers Section
-        let startNumber = 1;
-        new Setting(section)
-            .setName('Add Line Numbers')
-            .setDesc('Add line numbers to selected text')
-            .addText(text => 
-                text
-                    .setPlaceholder('Starting number (default: 1)')
-                    .onChange((value) => { 
-                        const num = parseInt(value);
-                        startNumber = isNaN(num) ? 1 : num;
-                    })
-            )
-            .addButton(button => 
-                button
-                    .setButtonText('Add Numbers')
-                    .onClick(() => {
-                        const selection = this.editor.getSelection();
-                        if (!selection) {
-                            new Notice('Please select some text first');
-                            return;
-                        }
-                        const result = selectionService.addLineNumbers(selection, startNumber);
-                        this.editor.replaceSelection(result.processedText);
-                        new Notice(`Added numbers to ${result.stats.linesProcessed} lines`);
-                    })
-            );
+        const content = section.createDiv('image-gin-section-content');
+        
+        new Setting(content)
+            .setName('Write prompt to frontmatter')
+            .setDesc('Save the image prompt to the file\'s frontmatter')
+            .addToggle(toggle => {
+                toggle.setValue(this.writeToFrontmatter);
+                toggle.onChange((value) => {
+                    this.writeToFrontmatter = value;
+                });
+            });
     }
 
-    onClose() {
+    private renderProgressSection(containerEl: HTMLElement): void {
+        this.progressEl = containerEl.createDiv('image-gin-progress');
+        this.progressEl.style.display = 'none';
+        
+        this.progressEl.createEl('p', { 
+            text: 'Generating images...',
+            cls: 'image-gin-progress-text'
+        });
+    }
+
+    private renderGenerateButton(containerEl: HTMLElement): void {
+        const buttonContainer = containerEl.createDiv();
+        
+        const generateBtn = buttonContainer.createEl('button', {
+            text: 'Generate Images',
+            cls: 'image-gin-button'
+        });
+
+        generateBtn.addEventListener('click', () => {
+            this.handleGenerate();
+        });
+    }
+
+    private async handleGenerate(): Promise<void> {
+        if (this.isGenerating) return;
+
+        // Validation
+        if (!this.imagePrompt.trim()) {
+            new Notice('Please enter an image prompt');
+            return;
+        }
+
+        if (this.selectedSizes.size === 0) {
+            new Notice('Please select at least one image size');
+            return;
+        }
+
+        if (!this.currentFile) {
+            new Notice('No active file found');
+            return;
+        }
+
+        this.isGenerating = true;
+        this.showProgress();
+
+        try {
+            // Update frontmatter if requested
+            if (this.writeToFrontmatter) {
+                await this.updateFrontmatter();
+            }
+
+            // Initialize the image service
+            const imageService = new RecraftImageService(this.plugin.settings, this.app.vault);
+
+            // Get selected sizes
+            const availableSizes = this.plugin.settings.imageSizes || [];
+            const sizesToGenerate = availableSizes.filter(size => this.selectedSizes.has(size.id));
+
+            // Prepare style parameters
+            const styleParams = this.getStyleParams();
+
+            // Generate images for each selected size
+            for (const size of sizesToGenerate) {
+                try {
+                    this.updateProgress(`Generating ${size.label} image...`);
+                    
+                    const generatedImage = await imageService.generateImage(
+                        this.imagePrompt,
+                        size.width,
+                        size.height,
+                        styleParams
+                    );
+
+                    // Save the image
+                    const imagePath = imageService.getImagePath(
+                        'generated-image',
+                        size.width,
+                        size.height,
+                        generatedImage.timestamp
+                    );
+
+                    await imageService.saveImage(generatedImage, imagePath);
+
+                    // Update frontmatter with image path
+                    await this.updateImagePathInFrontmatter(size.yamlKey, imagePath);
+
+                    new Notice(`${size.label} image generated successfully`);
+                } catch (error) {
+                    console.error(`Error generating ${size.label} image:`, error);
+                    new Notice(`Failed to generate ${size.label} image: ${this.getErrorMessage(error)}`);
+                }
+            }
+
+            new Notice('Image generation completed');
+            this.close();
+
+        } catch (error) {
+            console.error('Error in image generation process:', error);
+            new Notice(`Error: ${this.getErrorMessage(error)}`);
+        } finally {
+            this.isGenerating = false;
+            this.hideProgress();
+        }
+    }
+
+    private getStyleParams(): any {
+        const styleSettings = this.plugin.settings.style;
+        
+        if (styleSettings.useCustomStyle) {
+            return {
+                style_id: styleSettings.customStyleId
+            };
+        } else {
+            const params: any = {
+                style: styleSettings.presetStyle.base
+            };
+            
+            if (styleSettings.presetStyle.substyle) {
+                params.substyle = styleSettings.presetStyle.substyle;
+            }
+            
+            return params;
+        }
+    }
+
+    private async updateFrontmatter(): Promise<void> {
+        if (!this.currentFile) return;
+
+        try {
+            const content = await this.app.vault.read(this.currentFile);
+            const frontmatter = extractFrontmatter(content) || {};
+            
+            frontmatter[this.plugin.settings.imagePromptKey] = this.imagePrompt;
+            
+            const formattedFrontmatter = formatFrontmatter(frontmatter);
+            await updateFileFrontmatter(this.currentFile, formattedFrontmatter);
+            
+        } catch (error) {
+            console.error('Error updating frontmatter:', error);
+            throw new Error('Failed to update frontmatter');
+        }
+    }
+
+    private async updateImagePathInFrontmatter(yamlKey: string, imagePath: string): Promise<void> {
+        if (!this.currentFile) return;
+
+        try {
+            const content = await this.app.vault.read(this.currentFile);
+            const frontmatter = extractFrontmatter(content) || {};
+            
+            frontmatter[yamlKey] = imagePath;
+            
+            const formattedFrontmatter = formatFrontmatter(frontmatter);
+            await updateFileFrontmatter(this.currentFile, formattedFrontmatter);
+            
+        } catch (error) {
+            console.error('Error updating image path in frontmatter:', error);
+            // Don't throw here as the image was still generated successfully
+        }
+    }
+
+    private showProgress(): void {
+        if (this.progressEl) {
+            this.progressEl.style.display = 'block';
+        }
+    }
+
+    private hideProgress(): void {
+        if (this.progressEl) {
+            this.progressEl.style.display = 'none';
+        }
+    }
+
+    private updateProgress(message: string): void {
+        if (this.progressEl) {
+            const textEl = this.progressEl.querySelector('.image-gin-progress-text');
+            if (textEl) {
+                textEl.textContent = message;
+            }
+        }
+    }
+
+    private getErrorMessage(error: unknown): string {
+        if (error instanceof Error) {
+            return error.message;
+        }
+        if (typeof error === 'string') {
+            return error;
+        }
+        return 'An unknown error occurred';
+    }
+
+    onClose(): void {
         const { contentEl } = this;
         contentEl.empty();
     }

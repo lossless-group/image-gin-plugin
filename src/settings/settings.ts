@@ -2,11 +2,71 @@ import type { ImageSize } from '../types';
 import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
 import ImageGinPlugin from '../../main';
 
+export type BaseStyle = 'realistic_image' | 'digital_illustration' | 'vector_illustration' | 'icon';
+
+export interface StyleOption {
+    id: string;
+    label: string;
+}
+
+export interface StyleGroup {
+    label: string;
+    substyles: StyleOption[];
+}
+
+export const STYLE_OPTIONS: Record<string, StyleGroup> = {
+    realistic_image: {
+        label: 'Realistic Image',
+        substyles: [
+            { id: 'b_and_w', label: 'Black & White' },
+            { id: 'enterprise', label: 'Enterprise' },
+            { id: 'natural_light', label: 'Natural Light' },
+            { id: 'studio_portrait', label: 'Studio Portrait' }
+        ]
+    },
+    digital_illustration: {
+        label: 'Digital Illustration',
+        substyles: [
+            { id: '2d_art_poster', label: '2D Art Poster' },
+            { id: 'graphic_intensity', label: 'Graphic Intensity' },
+            { id: 'hand_drawn', label: 'Hand Drawn' },
+            { id: 'pixel_art', label: 'Pixel Art' }
+        ]
+    },
+    vector_illustration: {
+        label: 'Vector Illustration',
+        substyles: [
+            { id: 'line_art', label: 'Line Art' },
+            { id: 'flat', label: 'Flat Design' },
+            { id: 'isometric', label: 'Isometric' }
+        ]
+    },
+    icon: {
+        label: 'Icon',
+        substyles: [
+            { id: 'outline', label: 'Outline' },
+            { id: 'filled', label: 'Filled' },
+            { id: 'color', label: 'Color' }
+        ]
+    }
+};
+
 export const DEFAULT_IMAGE_SIZES: ImageSize[] = [
     { id: 'banner', yamlKey: 'banner_image', width: 2048, height: 1024, label: 'Banner' },
     { id: 'portrait', yamlKey: 'portrait_image', width: 1024, height: 1820, label: 'Portrait' },
     { id: 'square', yamlKey: 'square_image', width: 1024, height: 1024, label: 'Square' }
 ];
+
+export interface PresetStyleConfig {
+    base: BaseStyle;
+    substyle?: string;
+}
+
+export interface StyleSettings {
+    useCustomStyle: boolean;
+    presetStyle: PresetStyleConfig;
+    customStyleId: string | null;  // Using null instead of undefined for better type safety
+}
 
 export interface ImageGinSettings {
     recraftApiKey: string;
@@ -18,9 +78,22 @@ export interface ImageGinSettings {
     defaultPortraitSize: string;
     retries: number;
     rateLimit: number;
-    imageStylesJSON: string; // JSON string of style configurations
+    style: StyleSettings;
+    imageStylesJSON: string;
+    imageOutputFolder: string; // for backward compatibility
 }
 
+// Default style configuration
+export const DEFAULT_STYLE_SETTINGS: StyleSettings = {
+    useCustomStyle: false,
+    presetStyle: {
+        base: 'digital_illustration',
+        substyle: 'graphic_intensity'
+    },
+    customStyleId: null  // Using null instead of undefined
+};
+
+// Legacy default styles (kept for backward compatibility)
 export const DEFAULT_IMAGE_STYLES_JSON = JSON.stringify([
     {
         "creation_time": "2025-04-15T02:24:01.574783871Z",
@@ -40,8 +113,10 @@ export const DEFAULT_SETTINGS: ImageGinSettings = {
     defaultBannerSize: 'banner',
     defaultPortraitSize: 'portrait',
     retries: 3,
-    rateLimit: 1000, // milliseconds between requests
-    imageStylesJSON: DEFAULT_IMAGE_STYLES_JSON,
+    rateLimit: 5, // requests per minute
+    style: DEFAULT_STYLE_SETTINGS,
+    imageStylesJSON: JSON.stringify(STYLE_OPTIONS, null, 2),
+    imageOutputFolder: 'assets/images',
 };
 
 export class ImageGinSettingTab extends PluginSettingTab {

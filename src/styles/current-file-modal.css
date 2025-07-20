@@ -1,4 +1,6 @@
-/* Modal Base Styles */
+/* image-gin/src/styles/current-file-modal.css */
+
+/* ===== Base Modal Styles ===== */
 .modal {
     padding: 1.5rem;
     max-width: 900px;
@@ -15,7 +17,140 @@
     font-weight: 600;
 }
 
-/* Modal Section Styles */
+/* ===== Image Gin Specific Styles ===== */
+.image-gin-modal {
+    --modal-padding: 1.5rem;
+    --border-color: var(--background-modifier-border);
+    --hover-bg: var(--background-modifier-hover);
+    --active-bg: var(--background-modifier-active);
+    
+    padding: var(--modal-padding);
+    width: 100%;
+    max-width: 800px;
+    box-sizing: border-box;
+    margin: 0 auto;
+}
+
+.image-gin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.image-gin-title {
+    margin: 0;
+    color: var(--text-normal);
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* Form Sections */
+.image-gin-section {
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.image-gin-section-header {
+    padding: 0.75rem 1rem;
+    background-color: var(--background-secondary);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+}
+
+.image-gin-section-content {
+    padding: 1rem;
+}
+
+/* Form Controls */
+.image-gin-textarea {
+    width: 100%;
+    min-height: 100px;
+    resize: vertical;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--background-primary);
+    color: var(--text-normal);
+}
+
+.image-gin-textarea:focus {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 1px var(--interactive-accent);
+    outline: none;
+}
+
+/* Toggle Switches */
+.image-gin-toggle-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.image-gin-toggle-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.image-gin-toggle-item:hover {
+    background-color: var(--hover-bg);
+}
+
+.image-gin-toggle-item .toggle-container {
+    margin-right: 0.75rem;
+}
+
+/* Progress Indicator */
+.image-gin-progress {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: var(--hover-bg);
+    border-radius: 4px;
+    text-align: center;
+}
+
+.image-gin-progress-text {
+    color: var(--text-normal);
+    font-weight: 500;
+    margin: 0;
+}
+
+/* Buttons */
+.image-gin-button {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.image-gin-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.image-gin-button:not(:disabled):hover {
+    background-color: var(--interactive-accent-hover);
+    transform: translateY(-1px);
+}
+
+.image-gin-button:not(:disabled):active {
+    transform: translateY(0);
+}
+
+/* ===== Modal Sections ===== */
 .modal-section {
     margin-bottom: 2rem;
     border: 1px solid var(--background-modifier-border);
@@ -49,90 +184,7 @@
     background-color: var(--background-primary-alt);
 }
 
-/* Current File Modal Specific Styles */
-.current-file-modal {
-    padding: 1.5rem;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.current-file-modal .modal-section {
-    margin-bottom: 1.5rem;
-}
-
-.current-file-modal .setting-item-name {
-    font-weight: 500;
-    color: var(--text-normal);
-    margin-bottom: 0.25rem;
-}
-
-.current-file-modal .setting-item-description {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
-
-.current-file-modal .setting-item-control {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-top: 0.75rem;
-}
-
-.current-file-modal .setting-item-control input[type="text"] {
-    flex: 1;
-    min-width: 150px;
-    padding: 0.5rem;
-    border: 1px solid var(--background-modifier-border);
-    border-radius: 4px;
-    background-color: var(--background-primary);
-    color: var(--text-normal);
-    font-size: 0.9rem;
-}
-
-.current-file-modal .setting-item-control input[type="text"]:focus {
-    outline: none;
-    border-color: var(--interactive-accent);
-    box-shadow: 0 0 0 2px var(--interactive-accent-hover);
-}
-
-.current-file-modal .setting-item-control button {
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--interactive-accent);
-    border-radius: 4px;
-    background-color: var(--interactive-accent);
-    color: var(--text-on-accent);
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-}
-
-.current-file-modal .setting-item-control button:hover {
-    background-color: var(--interactive-accent-hover);
-    border-color: var(--interactive-accent-hover);
-    transform: translateY(-1px);
-}
-
-.current-file-modal .setting-item-control button:active {
-    transform: translateY(0);
-}
-
-/* Text Case Buttons Styling */
-.current-file-modal .text-case-buttons {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.current-file-modal .text-case-buttons button {
-    flex: 1;
-    min-width: 100px;
-}
-
-/* Batch Directory Modal Specific Styles */
+/* ===== Batch Directory Modal ===== */
 .batch-directory-modal {
     padding: 1.5rem;
     max-width: 900px;
@@ -201,15 +253,12 @@
     border-radius: 4px;
     background-color: var(--interactive-accent);
     color: var(--text-on-accent);
-    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-width: 120px;
 }
 
 .batch-directory-modal .batch-button:hover {
     background-color: var(--interactive-accent-hover);
-    border-color: var(--interactive-accent-hover);
     transform: translateY(-1px);
 }
 
@@ -223,7 +272,11 @@
     background-color: var(--background-modifier-hover);
 }
 
-/* Analysis Section Specific Styles */
+.batch-directory-modal .batch-button:active {
+    transform: translateY(0);
+}
+
+/* ===== Analysis Section ===== */
 .batch-directory-modal .analysis-section {
     background-color: var(--background-secondary-alt);
 }
@@ -244,7 +297,7 @@
     margin-top: 0.75rem;
 }
 
-/* Utility Classes */
+/* ===== Utility Classes ===== */
 .flex-row {
     display: flex;
     gap: 0.75rem;
@@ -268,19 +321,11 @@
     font-weight: 500;
 }
 
-.margin-bottom-small {
-    margin-bottom: 0.5rem;
-}
+.margin-bottom-small { margin-bottom: 0.5rem; }
+.margin-bottom-medium { margin-bottom: 1rem; }
+.margin-bottom-large { margin-bottom: 1.5rem; }
 
-.margin-bottom-medium {
-    margin-bottom: 1rem;
-}
-
-.margin-bottom-large {
-    margin-bottom: 1.5rem;
-}
-
-/* Progress and Status Indicators */
+/* ===== Progress and Status Indicators ===== */
 .progress-indicator {
     display: inline-block;
     width: 16px;
@@ -322,7 +367,7 @@
     color: var(--text-on-accent);
 }
 
-/* Responsive Design */
+/* ===== Responsive Design ===== */
 @media (max-width: 768px) {
     .modal {
         padding: 1rem;
@@ -351,7 +396,7 @@
     }
 }
 
-/* Dark Theme Adjustments */
+/* ===== Theme Adjustments ===== */
 .theme-dark .modal-section {
     border-color: var(--background-modifier-border);
 }
@@ -365,11 +410,24 @@
     border-left-color: var(--interactive-accent);
 }
 
-/* Light Theme Adjustments */
 .theme-light .modal-section {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .theme-light .batch-directory-modal .batch-operation {
     background-color: var(--background-primary-alt);
+}
+
+@media (max-width: 600px) {
+    .image-gin-modal {
+        padding: 1rem;
+    }
+    
+    .image-gin-title {
+        font-size: 1.25rem;
+    }
+    
+    .image-gin-section-content {
+        padding: 0.75rem;
+    }
 }
