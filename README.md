@@ -1,7 +1,63 @@
-![Obsidian Plugin Starter Kit by The Lossless Group](https://i.imgur.com/nfqH3Pi.png)
-# The Image Gin Plugin for Obsidian
+![Image Gin Plugin for Obsidian by The Lossless Group](https://i.imgur.com/jp2ME1E.png)
+# Image Gin for Obsidian
 
-This plugin enables Obsidian users to generate contextually relevant images with the assistance of Generative AI.  We begin with the [Recraft](https://recraft.ai) API.
+A powerful Obsidian plugin that brings AI-powered image generation directly to your Obsidian workflow. Seamlessly create and manage images using advanced AI models, starting with Recraft's API.
+
+## ✨ Features
+
+- **AI-Powered Image Generation**: Create stunning visuals directly from your notes using Recraft's AI models
+- **Seamless Integration**: Works natively within Obsidian's interface
+- **Flexible Image Types**: Generate both banner and portrait images with custom dimensions
+- **Smart Frontmatter Management**: Automatically updates your note's frontmatter with generated image URLs
+- **Customizable Prompts**: Fine-tune image generation with custom styles and parameters
+
+## 🚀 Getting Started
+
+### Prerequisites
+- [Obsidian](https://obsidian.md) (v1.8.10 or later)
+- Node.js (v18 or later)
+- pnpm (recommended) or npm
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/lossless-group/image-gin-plugin.git
+   cd image-gin-plugin
+   ```
+
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+
+3. Build the plugin:
+   ```bash
+   pnpm build
+   ```
+
+4. For development with hot-reloading:
+   ```bash
+   pnpm dev
+   ```
+
+## 🛠️ Configuration
+
+1. Get your Recraft API key from [Recraft's website](https://recraft.ai)
+2. Open Obsidian and navigate to Settings > Community Plugins
+3. Find "Image Gin" in the list and enable it
+4. Click on the gear icon to configure your API key and default settings
+
+## 🖼️ Usage
+
+1. Open a note where you want to generate an image
+2. Use the command palette (`Cmd/Ctrl+P`) and search for "Generate Image"
+3. Enter your image prompt and adjust settings as needed
+4. Click "Generate" and watch your image come to life
+
+## 📝 License
+
+This project is open source and available under the [MIT License](LICENSE).
 
 ## Getting Started
 
