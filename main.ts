@@ -5,11 +5,27 @@ import { Notice, Plugin, Editor } from 'obsidian';
 import { BatchDirectoryModal } from './src/modals/BatchDirectoryModal';
 // Import your utilities here
 // import { yourUtility } from './src/utils/yourUtility';
+import { ImageGinSettings, ImageGinSettingTab, DEFAULT_SETTINGS } from './src/settings/settings';
 
-export default class StarterPlugin extends Plugin {
+export default class ImageGinPlugin extends Plugin {
+    settings: ImageGinSettings = { ...DEFAULT_SETTINGS };
+
+    async loadSettings(): Promise<void> {
+        const loadedSettings = await this.loadData();
+        this.settings = { ...DEFAULT_SETTINGS, ...loadedSettings };
+    }
+
+    async saveSettings(): Promise<void> {
+        await this.saveData(this.settings);
+    }
+
     async onload(): Promise<void> {
+        await this.loadSettings();
+       
         // Load CSS
         this.loadStyles();
+
+        this.addSettingTab(new ImageGinSettingTab(this.app, this));
         
         // Register commands
         this.registerCommands();
