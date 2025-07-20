@@ -68,6 +68,16 @@ export interface StyleSettings {
     customStyleId: string | null;  // Using null instead of undefined for better type safety
 }
 
+export interface ImageKitSettings {
+    enabled: boolean;
+    publicKey: string;
+    privateKey: string;
+    urlEndpoint: string;
+    uploadFolder: string;
+    removeLocalFiles: boolean;
+    convertToWebp: boolean;
+}
+
 export interface ImageGinSettings {
     recraftApiKey: string;
     recraftBaseUrl: string;
@@ -80,7 +90,8 @@ export interface ImageGinSettings {
     rateLimit: number;
     style: StyleSettings;
     imageStylesJSON: string;
-    imageOutputFolder: string; // for backward compatibility
+    imageOutputFolder: string;
+    imageKit: ImageKitSettings;
 }
 
 // Default style configuration
@@ -117,6 +128,15 @@ export const DEFAULT_SETTINGS: ImageGinSettings = {
     style: DEFAULT_STYLE_SETTINGS,
     imageStylesJSON: JSON.stringify(STYLE_OPTIONS, null, 2),
     imageOutputFolder: 'assets/ImageGin',
+    imageKit: {
+        enabled: false,
+        publicKey: '',
+        privateKey: '',
+        urlEndpoint: 'https://ik.imagekit.io/your-imagekit-id',
+        uploadFolder: '/uploads/lossless/images',
+        removeLocalFiles: false,
+        convertToWebp: true,
+    },
 };
 
 export class ImageGinSettingTab extends PluginSettingTab {
