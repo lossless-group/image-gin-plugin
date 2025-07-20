@@ -3,13 +3,13 @@
 
 plugin:
   # Plugin identifiers
-  id: "obsidian-plugin-starter"
-  name: "Obsidian Plugin Starter"
-  class_name: "StarterPlugin"
+  id: "image-gin-plugin"
+  name: "Image Gin"
+  class_name: "ImageGin"
   
   # Plugin metadata
   version: "0.0.1"
-  description: "This is starter code for Obsidian plugins (https://obsidian.md)"
+  description: "Enables users to use Generative AI to generate contextually relevant images through an [Obsidian](https://obsidian.md) plugin."
   author: "The Lossless Group"
   author_url: "https://lossless.group"
   funding_url: "https://lossless.group"

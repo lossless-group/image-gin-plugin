@@ -1,9 +1,9 @@
 {
-	"id": "obsidian-plugin-starter",
-	"name": "Obsidian Starter",
+	"id": "image-gin-plugin",
+	"name": "Image Gin",
 	"version": "0.0.1",
 	"minAppVersion": "1.8.10",
-	"description": "This is starter code for Obsidian plugins (https://obsidian.md)",
+	"description": "Enables users to use Generative AI to generate contextually relevant images through an [Obsidian](https://obsidian.md) plugin.",
 	"author": "The Lossless Group",
 	"authorUrl": "https://lossless.group",
 	"fundingUrl": "https://lossless.group",

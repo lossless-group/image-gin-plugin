@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-plugin-starter",
+	"name": "image-gin-plugin",
 	"version": "0.0.1",
-	"description": "This is starter code for Obsidian plugins (https://obsidian.md)",
+	"description": "Enables users to use Generative AI to generate contextually relevant images through an [Obsidian](https://obsidian.md) plugin.",
 	"main": "main.js",
 	"scripts": {
 		"setup": "node setup-plugin.mjs",
@@ -12,11 +12,12 @@
 	"keywords": [
 		"Obsidian",
 		"Plugin",
-		"Footnotes",
-		"Citations"
+		"Image-Generation",
+		"Image-Generators",
+		"API-Integration"
 	],
 	"author": "The Lossless Group",
-	"license": "MIT",
+	"license": "The Unlicense",
 	"devDependencies": {
 		"@eslint/plugin-kit": "^0.3.3",
 		"@types/node": "^24.0.12",

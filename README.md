@@ -1,7 +1,7 @@
 ![Obsidian Plugin Starter Kit by The Lossless Group](https://i.imgur.com/nfqH3Pi.png)
-# Obsidian Plugin Starter Kit
+# The Image Gin Plugin for Obsidian
 
-This is barebones starter code to build an Obsidian plugin using the `pnpm` package manager.  It is a clone of the official Obsidian plugin starter code, but with updated libraries, packages, dependencies. 
+This plugin enables Obsidian users to generate contextually relevant images with the assistance of Generative AI.  We begin with the [Recraft](https://recraft.ai) API.
 
 ## Getting Started
 
