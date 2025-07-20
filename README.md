@@ -11,6 +11,20 @@ A powerful Obsidian plugin that brings AI-powered image generation directly to y
 - **Smart Frontmatter Management**: Automatically updates your note's frontmatter with generated image URLs
 - **Customizable Prompts**: Fine-tune image generation with custom styles and parameters
 
+### Modals
+
+1. Generate images from an image prompt in your YAML frontmatter.
+![Image Gin Demo Gif: Image Generation from Image Prompt Demo](https://i.imgur.com/12WhBJg.gif)
+
+2. Convert local images in a file to a remote image service url (only supports ImageKit).
+![Image Gin Demo GIF: Convert Locally Stored Images to a Remote Image Delivery Service URL with ImageKit](https://i.imgur.com/HfytkK3.gif)
+
+
+### Settings
+
+![Image Gin Demo GIF: Settings Page for Image Gin](https://i.imgur.com/snCuXt6.gif)
+
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -57,7 +71,7 @@ A powerful Obsidian plugin that brings AI-powered image generation directly to y
 
 ## 📝 License
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is open source and available under the [The Unlicense](https://unlicense.org).
 
 ## Getting Started
 

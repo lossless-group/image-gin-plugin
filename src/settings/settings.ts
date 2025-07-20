@@ -305,12 +305,15 @@ export class ImageGinSettingTab extends PluginSettingTab {
         const { containerEl } = this;
         containerEl.empty();
 
-        containerEl.createEl('h2', { text: 'Image Gin Settings' });
+        containerEl.createEl('h1', { text: 'Image Gin Settings' });
 
+        // === RECRAFT IMAGE GENERATION SETTINGS ===
+        containerEl.createEl('h2', { text: '🎨 Recraft Image Generation' });
+        
         // API Key
         new Setting(containerEl)
             .setName('Recraft API Key')
-            .setDesc('Your Recraft.ai API key')
+            .setDesc('Your Recraft.ai API key for image generation')
             .addText(text => text
                 .setPlaceholder('Enter your API key')
                 .setValue(this.plugin.settings.recraftApiKey)
@@ -336,7 +339,7 @@ export class ImageGinSettingTab extends PluginSettingTab {
         // Base URL setting
         new Setting(containerEl)
             .setName('ReCraft API Base URL')
-            .setDesc('ReCraft API base URL')
+            .setDesc('ReCraft API base URL (change only if using custom endpoint)')
             .addText(text => text
                 .setPlaceholder('https://external.api.recraft.ai/v1/images/generations')
                 .setValue(this.plugin.settings.recraftBaseUrl)
@@ -357,8 +360,11 @@ export class ImageGinSettingTab extends PluginSettingTab {
                     await this.plugin.saveSettings();
                 }));
 
-        // ImageKit Settings Section
-        containerEl.createEl('h3', { text: 'ImageKit CDN Settings' });
+        // Recraft-specific settings: Image size presets and style configurations
+        this.renderImageSizeSettings(containerEl);
+
+        // === IMAGEKIT CDN SETTINGS ===
+        containerEl.createEl('h2', { text: '☁️ ImageKit CDN Upload & Hosting' });
         
         // ImageKit Enable Toggle
         new Setting(containerEl)
@@ -452,8 +458,5 @@ export class ImageGinSettingTab extends PluginSettingTab {
                     this.plugin.settings.imageKit.convertToWebp = value;
                     await this.plugin.saveSettings();
                 }));
-
-        // Image size presets
-        this.renderImageSizeSettings(containerEl);
     }
 }

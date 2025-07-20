@@ -83,12 +83,23 @@ export function formatFrontmatter(frontmatter: Record<string, any>): string {
       if (value === false) return `${key}: false`;
       if (typeof value === 'number') return `${key}: ${value}`;
       if (Array.isArray(value)) {
-        // Handle arrays properly - don't quote the array itself
+        // Handle arrays properly - use bracket notation for cleaner output
         if (value.length === 0) {
           return `${key}: []`;
         }
-        const items = value.map(item => `  - ${item}`).join('\n');
-        return `${key}:\n${items}`;
+        // Use bracket notation: [item1, item2, item3]
+        const items = value.map(item => {
+          // Only quote items that need quoting
+          if (typeof item === 'string') {
+            const needsQuoting = /[\s:{\}\[\]|>*&!%#`@,]/.test(item) || 
+                                item.startsWith('-') || 
+                                item === '' ||
+                                /^(true|false|null|\d+(\.\d+)?)$/.test(item);
+            return needsQuoting ? `"${item}"` : item;
+          }
+          return String(item);
+        }).join(', ');
+        return `${key}: [${items}]`;
       }
       // Only quote string values that need quoting (contain spaces, special chars, etc.)
       if (typeof value === 'string') {
