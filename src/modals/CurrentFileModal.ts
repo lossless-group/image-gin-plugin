@@ -309,7 +309,24 @@ export class CurrentFileModal extends Modal {
     private getStyleParams(): any {
         const styleSettings = this.plugin.settings.style;
         
-        if (styleSettings.useCustomStyle) {
+        // Try to use custom style from imageStylesJSON first
+        try {
+            const customStyles = JSON.parse(this.plugin.settings.imageStylesJSON);
+            if (Array.isArray(customStyles) && customStyles.length > 0) {
+                const firstStyle = customStyles[0];
+                if (firstStyle.id) {
+                    console.log('Using custom style ID:', firstStyle.id);
+                    return {
+                        style_id: firstStyle.id
+                    };
+                }
+            }
+        } catch (error) {
+            console.warn('Failed to parse imageStylesJSON, falling back to preset styles:', error);
+        }
+        
+        // Fallback to preset styles
+        if (styleSettings.useCustomStyle && styleSettings.customStyleId) {
             return {
                 style_id: styleSettings.customStyleId
             };
