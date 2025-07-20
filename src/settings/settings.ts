@@ -116,7 +116,7 @@ export const DEFAULT_SETTINGS: ImageGinSettings = {
     rateLimit: 5, // requests per minute
     style: DEFAULT_STYLE_SETTINGS,
     imageStylesJSON: JSON.stringify(STYLE_OPTIONS, null, 2),
-    imageOutputFolder: 'assets/images',
+    imageOutputFolder: 'assets/ImageGin',
 };
 
 export class ImageGinSettingTab extends PluginSettingTab {
@@ -320,6 +320,18 @@ export class ImageGinSettingTab extends PluginSettingTab {
                 .setValue(this.plugin.settings.recraftBaseUrl)
                 .onChange(async (value) => {
                     this.plugin.settings.recraftBaseUrl = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        // Image Output Folder setting
+        new Setting(containerEl)
+            .setName('Image Output Folder')
+            .setDesc('Folder path where generated images will be saved. Use absolute path (e.g., /Users/username/path) or relative to vault root')
+            .addText(text => text
+                .setPlaceholder('assets/ImageGin')
+                .setValue(this.plugin.settings.imageOutputFolder)
+                .onChange(async (value) => {
+                    this.plugin.settings.imageOutputFolder = value;
                     await this.plugin.saveSettings();
                 }));
 

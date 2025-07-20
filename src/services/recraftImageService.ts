@@ -47,8 +47,7 @@ export class RecraftImageService {
 
             const requestData = {
                 prompt,
-                width,
-                height,
+                size: `${width}x${height}`, // Recraft API expects size as string like "2048x1024"
                 model: this.settings.recraftModelChoice,
                 n: 1, // Number of images to generate
                 response_format: 'url', // Using URL instead of b64_json
@@ -172,12 +171,6 @@ export class RecraftImageService {
 
     async saveImage(image: GeneratedImage, filePath: string): Promise<TFile> {
         try {
-            // Create folder if it doesn't exist
-            const folderPath = filePath.split('/').slice(0, -1).join('/');
-            if (folderPath && !await this.vault.adapter.exists(folderPath)) {
-                await this.vault.createFolder(folderPath);
-            }
-
             // Convert base64 to binary
             const binaryString = atob(image.base64);
             const bytes = new Uint8Array(binaryString.length);
@@ -185,9 +178,43 @@ export class RecraftImageService {
                 bytes[i] = binaryString.charCodeAt(i);
             }
 
-            // Save the image
-            const file = await this.vault.createBinary(filePath, bytes);
-            return file;
+            // Check if this is an absolute path
+            if (filePath.startsWith('/')) {
+                // Use Node.js fs operations for absolute paths
+                const fs = require('fs');
+                const path = require('path');
+                
+                console.log('Saving to absolute path:', filePath);
+                
+                // Create directory if it doesn't exist
+                const folderPath = path.dirname(filePath);
+                console.log('Creating directory if needed:', folderPath);
+                
+                if (!fs.existsSync(folderPath)) {
+                    console.log('Directory does not exist, creating:', folderPath);
+                    fs.mkdirSync(folderPath, { recursive: true });
+                } else {
+                    console.log('Directory already exists:', folderPath);
+                }
+                
+                // Write file directly to absolute path (from system root)
+                console.log('Writing file to:', filePath);
+                fs.writeFileSync(filePath, bytes);
+                console.log('File saved successfully to:', filePath);
+                
+                // Return a mock TFile since we can't create a real one outside the vault
+                // The caller should handle this case appropriately
+                return null as any;
+            } else {
+                // Use Obsidian vault methods for relative paths
+                const folderPath = filePath.split('/').slice(0, -1).join('/');
+                if (folderPath && !await this.vault.adapter.exists(folderPath)) {
+                    await this.vault.createFolder(folderPath);
+                }
+                
+                const file = await this.vault.createBinary(filePath, bytes);
+                return file;
+            }
         } catch (error) {
             console.error('Error saving image:', error);
             throw error;
@@ -195,8 +222,14 @@ export class RecraftImageService {
     }
 
     getImagePath(baseName: string, width: number, height: number, timestamp: number): string {
-        // Example: assets/images/image_1920x1080_1234567890.png
         const fileName = `${baseName}_${width}x${height}_${timestamp}.png`;
-        return `${this.settings.imageOutputFolder}/${fileName}`.replace(/\/\//g, '/');
+        
+        // If the path starts with '/', treat it as an absolute path
+        if (this.settings.imageOutputFolder.startsWith('/')) {
+            return `${this.settings.imageOutputFolder}/${fileName}`.replace(/\/\//g, '/');
+        } else {
+            // Relative path - let Obsidian handle it relative to vault root
+            return `${this.settings.imageOutputFolder}/${fileName}`.replace(/\/\//g, '/');
+        }
     }
 }
