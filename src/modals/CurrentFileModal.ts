@@ -136,11 +136,15 @@ export class CurrentFileModal extends Modal {
                 .addToggle(toggle => {
                     toggle.setValue(this.selectedSizes.has(size.id));
                     toggle.onChange((value) => {
+                        console.log(`Toggle changed for ${size.id}: ${value}`);
                         if (value) {
                             this.selectedSizes.add(size.id);
+                            console.log('Added to selectedSizes:', size.id);
                         } else {
                             this.selectedSizes.delete(size.id);
+                            console.log('Removed from selectedSizes:', size.id);
                         }
+                        console.log('Current selectedSizes:', Array.from(this.selectedSizes));
                     });
                 });
         });
@@ -257,7 +261,10 @@ export class CurrentFileModal extends Modal {
 
             // Get selected sizes
             const availableSizes = this.plugin.settings.imageSizes || [];
+            console.log('Available sizes:', availableSizes.map(s => s.id));
+            console.log('Selected sizes:', Array.from(this.selectedSizes));
             const sizesToGenerate = availableSizes.filter(size => this.selectedSizes.has(size.id));
+            console.log('Sizes to generate:', sizesToGenerate.map(s => s.id));
 
             // Prepare style parameters
             const styleParams = this.getStyleParams();
