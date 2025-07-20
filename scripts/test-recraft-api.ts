@@ -13,9 +13,20 @@ interface ApiResponse {
   }>;
 }
 
+// Interface for style configuration
+interface StyleConfig {
+  creation_time: string;
+  credits: number;
+  id: string;
+  is_private: boolean;
+  style: string;
+}
+
 // Configuration
+// Load settings from environment variables
 const API_KEY = process.env.RECRAFT_API_KEY;
-const API_URL = 'https://external.api.recraft.ai/v1/images/generations';
+const API_URL = process.env.RECRAFT_BASE_URL || 'https://external.api.recraft.ai/v1/images/generations';
+const IMAGE_STYLES_JSON = process.env.IMAGE_STYLES_JSON || '[]';
 
 async function testImageGeneration() {
   if (!API_KEY) {
@@ -23,14 +34,29 @@ async function testImageGeneration() {
     process.exit(1);
   }
 
+  // Get the first style from the settings
+  const styles: StyleConfig[] = JSON.parse(process.env.IMAGE_STYLES_JSON || '[]');
+  const defaultStyle: StyleConfig = {
+    creation_time: new Date().toISOString(),
+    credits: 0,
+    id: '',
+    is_private: true,
+    style: 'digital_illustration'
+  };
+  const styleConfig = styles[0] || defaultStyle;
+  const style = styleConfig.style;
+  const styleId = styleConfig.id;
+
   const requestBody = {
-    prompt: 'a serene landscape with mountains and a lake at sunset, digital art',
-    style: 'digital_illustration',
-    width: 1024,
-    height: 1024,
+    prompt: 'Two men are fishing above a data center, they are fishing for data.',
+    style: style,
+    style_id: styleId,
+    width: 2048,  // Using banner size from your defaults
+    height: 1024, // Using banner size from your defaults
     steps: 30,
     output_format: 'png',
     output_quality: 100,
+    model: 'recraftv3',  // From your settings
   };
 
   try {

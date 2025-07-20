@@ -79,28 +79,36 @@ export class ImageGinSettingTab extends PluginSettingTab {
                 }));
 
             // Width
-            setting.addText(text => text
-                .setPlaceholder('Width')
-                .setValue(size.width.toString())
-                .onChange(async (value) => {
-                    const num = parseInt(value, 10);
-                    if (!isNaN(num)) {
-                        size.width = num;
-                        await this.plugin.saveSettings();
-                    }
-                }));
+            setting.addText(text => {
+                const input = text.inputEl;
+                input.title = 'Valid widths: 1024, 1280, 1365, 1434, 1536, 1707, 1820, 2048';
+                return text
+                    .setPlaceholder('Width')
+                    .setValue(size.width.toString())
+                    .onChange(async (value) => {
+                        const num = parseInt(value, 10);
+                        if (!isNaN(num)) {
+                            size.width = num;
+                            await this.plugin.saveSettings();
+                        }
+                    });
+            });
 
             // Height
-            setting.addText(text => text
-                .setPlaceholder('Height')
-                .setValue(size.height.toString())
-                .onChange(async (value) => {
-                    const num = parseInt(value, 10);
-                    if (!isNaN(num)) {
-                        size.height = num;
-                        await this.plugin.saveSettings();
-                    }
-                }));
+            setting.addText(text => {
+                const input = text.inputEl;
+                input.title = 'Valid heights: 1024, 1280, 1365, 1434, 1536, 1707, 1820, 2048';
+                return text
+                    .setPlaceholder('Height')
+                    .setValue(size.height.toString())
+                    .onChange(async (value) => {
+                        const num = parseInt(value, 10);
+                        if (!isNaN(num)) {
+                            size.height = num;
+                            await this.plugin.saveSettings();
+                        }
+                    });
+            });
 
             // Delete button
             setting.addExtraButton(button => {
