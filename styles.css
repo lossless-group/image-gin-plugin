@@ -190,6 +190,68 @@
 .batch-directory-modal .analysis-section {
   background-color: var(--background-secondary-alt);
 }
+
+/* Image Size Settings */
+.image-sizes-container {
+  margin-top: 1.5rem;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: var(--background-primary);
+}
+
+.image-sizes-container h3 {
+  margin: 0;
+  padding: 1rem;
+  background-color: var(--background-secondary);
+  color: var(--text-normal);
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.image-size-setting {
+  padding: 1rem;
+  border-bottom: 1px solid var(--background-modifier-border-hover);
+  transition: background-color 0.2s ease;
+}
+
+.image-size-setting:last-child {
+  border-bottom: none;
+}
+
+.image-size-setting:hover {
+  background-color: var(--background-primary-alt);
+}
+
+.image-size-setting .setting-item-control {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.image-size-setting .setting-item-control > * {
+  flex: 1;
+  min-width: 0;
+  min-width: 120px; /* Ensure fields don't get too narrow */
+}
+
+/* Make the YAML key field a bit wider since it might contain longer text */
+.image-size-setting .setting-item-control > *:nth-child(2) {
+  flex: 2;
+}
+
+.image-size-setting .setting-item-control .setting-editor-extra-setting-button {
+  flex: 0 0 auto;
+  margin-left: 0.5rem;
+}
+
+/* Make the delete button more visible on hover */
+.image-size-setting .setting-editor-extra-setting-button:hover {
+  color: var(--text-error);
+}
+
 .batch-directory-modal .analysis-section h3 {
   background-color: var(--background-modifier-success);
   color: var(--text-normal);

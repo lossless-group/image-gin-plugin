@@ -2,6 +2,8 @@ import { PluginSettingTab } from 'obsidian';
 import { Plugin } from 'obsidian';
 
 export interface ImageSize {
+    id: string;
+    yamlKey: string;
     width: number;
     height: number;
     label: string;
@@ -14,6 +16,7 @@ export interface PluginSettings {
   backoffDelay: number;
   rateLimit: number;
   cacheDuration: number;
+  imageStylesJSON: string; // JSON string of style configurations
 }
 
 
