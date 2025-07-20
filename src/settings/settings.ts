@@ -73,6 +73,7 @@ export interface ImageKitSettings {
     publicKey: string;
     privateKey: string;
     urlEndpoint: string;
+    uploadEndpoint: string;
     uploadFolder: string;
     removeLocalFiles: boolean;
     convertToWebp: boolean;
@@ -133,6 +134,7 @@ export const DEFAULT_SETTINGS: ImageGinSettings = {
         publicKey: '',
         privateKey: '',
         urlEndpoint: 'https://ik.imagekit.io/your-imagekit-id',
+        uploadEndpoint: 'https://upload.imagekit.io/api/v1/files/upload',
         uploadFolder: '/uploads/lossless/images',
         removeLocalFiles: false,
         convertToWebp: true,
@@ -352,6 +354,102 @@ export class ImageGinSettingTab extends PluginSettingTab {
                 .setValue(this.plugin.settings.imageOutputFolder)
                 .onChange(async (value) => {
                     this.plugin.settings.imageOutputFolder = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        // ImageKit Settings Section
+        containerEl.createEl('h3', { text: 'ImageKit CDN Settings' });
+        
+        // ImageKit Enable Toggle
+        new Setting(containerEl)
+            .setName('Enable ImageKit CDN')
+            .setDesc('Upload generated images to ImageKit CDN for optimized delivery')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.imageKit.enabled)
+                .onChange(async (value) => {
+                    this.plugin.settings.imageKit.enabled = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        // ImageKit Public Key
+        new Setting(containerEl)
+            .setName('ImageKit Public Key')
+            .setDesc('Your ImageKit public key (found in ImageKit dashboard)')
+            .addText(text => text
+                .setPlaceholder('public_key_here')
+                .setValue(this.plugin.settings.imageKit.publicKey)
+                .onChange(async (value) => {
+                    this.plugin.settings.imageKit.publicKey = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        // ImageKit Private Key
+        new Setting(containerEl)
+            .setName('ImageKit Private Key')
+            .setDesc('Your ImageKit private key (keep this secure!)')
+            .addText(text => text
+                .setPlaceholder('private_key_here')
+                .setValue(this.plugin.settings.imageKit.privateKey)
+                .onChange(async (value) => {
+                    this.plugin.settings.imageKit.privateKey = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        // ImageKit URL Endpoint
+        new Setting(containerEl)
+            .setName('ImageKit URL Endpoint')
+            .setDesc('Your ImageKit CDN URL endpoint for serving images')
+            .addText(text => text
+                .setPlaceholder('https://ik.imagekit.io/your-imagekit-id')
+                .setValue(this.plugin.settings.imageKit.urlEndpoint)
+                .onChange(async (value) => {
+                    this.plugin.settings.imageKit.urlEndpoint = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        // ImageKit Upload Endpoint
+        new Setting(containerEl)
+            .setName('ImageKit Upload Endpoint')
+            .setDesc('ImageKit API endpoint for uploading files')
+            .addText(text => text
+                .setPlaceholder('https://upload.imagekit.io/api/v1/files/upload')
+                .setValue(this.plugin.settings.imageKit.uploadEndpoint)
+                .onChange(async (value) => {
+                    this.plugin.settings.imageKit.uploadEndpoint = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        // ImageKit Upload Folder
+        new Setting(containerEl)
+            .setName('ImageKit Upload Folder')
+            .setDesc('Folder path in ImageKit where images will be uploaded')
+            .addText(text => text
+                .setPlaceholder('/uploads/lossless/images')
+                .setValue(this.plugin.settings.imageKit.uploadFolder)
+                .onChange(async (value) => {
+                    this.plugin.settings.imageKit.uploadFolder = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        // Remove Local Files Toggle
+        new Setting(containerEl)
+            .setName('Remove Local Files After Upload')
+            .setDesc('Delete local image files after successful upload to ImageKit')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.imageKit.removeLocalFiles)
+                .onChange(async (value) => {
+                    this.plugin.settings.imageKit.removeLocalFiles = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        // Convert to WebP Toggle
+        new Setting(containerEl)
+            .setName('Convert to WebP')
+            .setDesc('Convert uploaded images to WebP format for better optimization')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.imageKit.convertToWebp)
+                .onChange(async (value) => {
+                    this.plugin.settings.imageKit.convertToWebp = value;
                     await this.plugin.saveSettings();
                 }));
 

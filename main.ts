@@ -1,6 +1,7 @@
 import { Plugin } from 'obsidian';
-// Import modal class
+// Import modal classes
 import { CurrentFileModal } from './src/modals/CurrentFileModal';
+import { ConvertLocalImagesForCurrentFile } from './src/modals/ConvertLocalImagesForCurrentFile';
 import { ImageGinSettings, ImageGinSettingTab, DEFAULT_SETTINGS } from './src/settings/settings';
 
 export default class ImageGinPlugin extends Plugin {
@@ -20,12 +21,20 @@ export default class ImageGinPlugin extends Plugin {
         
         this.addSettingTab(new ImageGinSettingTab(this.app, this));
         
-        // Register command directly in onload
+        // Register commands directly in onload
         this.addCommand({
             id: 'generate-images-for-current-file',
             name: 'Generate Images for Current File',
             callback: () => {
                 new CurrentFileModal(this.app, this).open();
+            }
+        });
+
+        this.addCommand({
+            id: 'convert-local-images-to-remote',
+            name: 'Convert Local Images to Remote Images',
+            callback: () => {
+                new ConvertLocalImagesForCurrentFile(this.app, this).open();
             }
         });
     }

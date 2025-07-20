@@ -99,13 +99,13 @@ export class ImageKitService {
             fileName: finalFileName,
             folder: uploadFolder,
             tags: tags?.join(','),
-            endpoint: 'https://upload.imagekit.io/api/v1/files/upload',
+            endpoint: this.settings.imageKit.uploadEndpoint,
             contentLength: totalLength
         });
 
         try {
             const response = await requestUrl({
-                url: 'https://upload.imagekit.io/api/v1/files/upload',
+                url: this.settings.imageKit.uploadEndpoint,
                 method: 'POST',
                 headers: {
                     'Authorization': `Basic ${btoa(this.settings.imageKit.privateKey + ':')}`,
