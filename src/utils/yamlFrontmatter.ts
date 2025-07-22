@@ -78,33 +78,27 @@ export function extractFrontmatter(content: string): Record<string, any> | null 
 export function formatFrontmatter(frontmatter: Record<string, any>): string {
   return Object.entries(frontmatter)
     .map(([key, value]) => {
+      // Special handling for tags property
+      if (key === 'tags') {
+        return formatTagsProperty(value);
+      }
+      
       if (value === null) return `${key}: null`;
       if (value === true) return `${key}: true`;
       if (value === false) return `${key}: false`;
       if (typeof value === 'number') return `${key}: ${value}`;
       if (Array.isArray(value)) {
-        // Handle arrays properly - use bracket notation for cleaner output
+        // Handle arrays properly - don't quote the array itself
         if (value.length === 0) {
           return `${key}: []`;
         }
-        // Use bracket notation: [item1, item2, item3]
-        const items = value.map(item => {
-          // Only quote items that need quoting
-          if (typeof item === 'string') {
-            const needsQuoting = /[\s:{\}\[\]|>*&!%#`@,]/.test(item) || 
-                                item.startsWith('-') || 
-                                item === '' ||
-                                /^(true|false|null|\d+(\.\d+)?)$/.test(item);
-            return needsQuoting ? `"${item}"` : item;
-          }
-          return String(item);
-        }).join(', ');
-        return `${key}: [${items}]`;
+        const items = value.map(item => `  - ${item}`).join('\n');
+        return `${key}:\n${items}`;
       }
       // Only quote string values that need quoting (contain spaces, special chars, etc.)
       if (typeof value === 'string') {
         // Check if the string needs quoting
-        const needsQuoting = /[\s:{}\[\]|>*&!%#`@,]/.test(value) || 
+        const needsQuoting = /[\s:{}\/\[\]|>*&!%#`@,]/.test(value) || 
                             value.startsWith('-') || 
                             value === '' ||
                             /^(true|false|null|\d+(\.\d+)?)$/.test(value);
@@ -114,6 +108,50 @@ export function formatFrontmatter(frontmatter: Record<string, any>): string {
       return `${key}: "${String(value)}"`;
     })
     .join('\n');
+}
+
+/**
+ * Formats the tags property with special handling for both array formats
+ * @param value The tags value (array, string, or other)
+ * @returns Formatted tags line
+ */
+function formatTagsProperty(value: any): string {
+  if (value === null) return 'tags: null';
+  if (value === undefined) return 'tags: []';
+  
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return 'tags: []';
+    }
+    
+    // Check if any tag contains spaces or special characters that would require list format
+    const hasComplexTags = value.some(tag => 
+      typeof tag === 'string' && /[\s:{}\/\[\]|>*&!%#`@,]/.test(tag)
+    );
+    
+    if (hasComplexTags) {
+      // Use list format for complex tags
+      const items = value.map(item => `  - ${item}`).join('\n');
+      return `tags:\n${items}`;
+    } else {
+      // Use bracket format for simple tags
+      const tagList = value.join(', ');
+      return `tags: [${tagList}]`;
+    }
+  }
+  
+  // Handle string value (might be existing bracket format)
+  if (typeof value === 'string') {
+    // If it's already in bracket format, preserve it
+    if (value.startsWith('[') && value.endsWith(']')) {
+      return `tags: ${value}`;
+    }
+    // Otherwise treat as single tag
+    return `tags: [${value}]`;
+  }
+  
+  // Fallback
+  return `tags: [${String(value)}]`;
 }
 
 /**
