@@ -32,26 +32,11 @@ export class CurrentFileModal extends Modal {
         contentEl.empty();
         contentEl.addClass('image-gin-modal');
 
-        // Load CSS
-        this.loadStyles();
-
         // Extract existing image_prompt from frontmatter
         await this.loadExistingPrompt();
 
         // Render modal content
         this.renderModalContent();
-    }
-
-    private loadStyles(): void {
-        // The CSS file should be loaded by the plugin, but we can ensure it's applied
-        const existingStyle = document.getElementById('image-gin-modal-styles');
-        if (!existingStyle) {
-            const style = document.createElement('link');
-            style.id = 'image-gin-modal-styles';
-            style.rel = 'stylesheet';
-            style.href = 'app://obsidian.md/src/styles/current-file-modal.css';
-            document.head.appendChild(style);
-        }
     }
 
     private async loadExistingPrompt(): Promise<void> {
