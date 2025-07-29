@@ -19,6 +19,8 @@ A powerful Obsidian plugin that brings AI-powered image generation directly to y
 2. Convert local images in a file to a remote image service url (only supports ImageKit).
 ![Image Gin Demo GIF: Convert Locally Stored Images to a Remote Image Delivery Service URL with ImageKit](https://i.imgur.com/HfytkK3.gif)
 
+![Image Gin: Obsidian Community Plugin now uploads local images found in a Markdown file. July 20, 2025](https://i.imgur.com/vx10bdC.png)
+
 
 ### Settings
 
