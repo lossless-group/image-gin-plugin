@@ -2,6 +2,7 @@ import { Plugin } from 'obsidian';
 // Import modal classes
 import { CurrentFileModal } from './src/modals/CurrentFileModal';
 import { ConvertLocalImagesForCurrentFile } from './src/modals/ConvertLocalImagesForCurrentFile';
+import { BatchDirectoryConvertLocalToRemote } from './src/modals/BatchDirectoryConvertLocalToRemote';
 import { ImageGinSettings, ImageGinSettingTab, DEFAULT_SETTINGS } from './src/settings/settings';
 
 export default class ImageGinPlugin extends Plugin {
@@ -35,6 +36,14 @@ export default class ImageGinPlugin extends Plugin {
             name: 'Convert Local Images to Remote Images',
             callback: () => {
                 new ConvertLocalImagesForCurrentFile(this.app, this).open();
+            }
+        });
+
+        this.addCommand({
+            id: 'batch-convert-directory-images',
+            name: 'Batch Convert Directory Images to Remote',
+            callback: () => {
+                new BatchDirectoryConvertLocalToRemote(this.app, this).open();
             }
         });
     }
