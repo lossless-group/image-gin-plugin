@@ -1,6 +1,6 @@
 {
 	"name": "image-gin-plugin",
-	"version": "0.0.7",
+	"version": "0.0.9",
 	"description": "Enables users to use Generative AI to generate contextually relevant images through an [Obsidian](https://obsidian.md) plugin.",
 	"main": "main.js",
 	"scripts": {
