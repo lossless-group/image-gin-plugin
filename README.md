@@ -6,6 +6,7 @@ A powerful Obsidian plugin that brings AI-powered image generation directly to y
 ## ✨ Features
 
 - **AI-Powered Image Generation**: Create stunning visuals directly from your notes using Recraft's AI models
+- **Stock Image Selection**: Seamlessly generate images using Freepik's API
 - **Seamless Integration**: Works natively within Obsidian's interface
 - **Flexible Image Types**: Generate both banner and portrait images with custom dimensions
 - **Smart Frontmatter Management**: Automatically updates your note's frontmatter with generated image URLs
@@ -22,6 +23,7 @@ A powerful Obsidian plugin that brings AI-powered image generation directly to y
 3. Batch convert local images found in any file in a directory to a remote image service url (only supports ImageKit).
 ![Image Gin Demo GIF: Batch Convert Locally Stored Images to a Remote Image Delivery Service URL with ImageKit](https://imgur.com/sxKzo97)
 
+4. Freepik Image Search: Search for images using Freepik's API and insert them into your notes.
 
 ### Settings
 
@@ -64,9 +66,11 @@ A powerful Obsidian plugin that brings AI-powered image generation directly to y
 ## 🛠️ Configuration
 
 1. Get your Recraft API key from [Recraft's website](https://recraft.ai)
-2. Open Obsidian and navigate to Settings > Community Plugins
-3. Find "Image Gin" in the list and enable it
-4. Click on the gear icon to configure your API key and default settings
+2. Get your Freepik API key from [Freepik's website](https://www.freepik.com)
+3. Get your ImageKit API key from [ImageKit's website](https://imagekit.io)
+3. Open Obsidian and navigate to Settings > Community Plugins
+4. Find "Image Gin" in the list and enable it
+5. Click on the gear icon to configure your API keys and default settings
 
 ## 🖼️ Usage
 

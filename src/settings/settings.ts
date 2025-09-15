@@ -79,6 +79,21 @@ export interface ImageKitSettings {
     convertToWebp: boolean;
 }
 
+export interface FreepikSettings {
+    enabled: boolean;
+    apiKey: string;
+    defaultLicense: 'free' | 'premium';
+    defaultImageCount: number;
+}
+
+export interface ImageCacheSettings {
+    enabled: boolean;
+    cacheFolder: string;
+    maxCacheSize: number; // in MB
+    autoCleanup: boolean;
+    cleanupDays: number;
+}
+
 export interface ImageGinSettings {
     recraftApiKey: string;
     recraftBaseUrl: string;
@@ -93,6 +108,8 @@ export interface ImageGinSettings {
     imageStylesJSON: string;
     imageOutputFolder: string;
     imageKit: ImageKitSettings;
+    freepik: FreepikSettings;
+    imageCache: ImageCacheSettings;
 }
 
 // Default style configuration
@@ -138,6 +155,19 @@ export const DEFAULT_SETTINGS: ImageGinSettings = {
         uploadFolder: '/uploads/lossless/images',
         removeLocalFiles: false,
         convertToWebp: true,
+    },
+    freepik: {
+        enabled: false,
+        apiKey: '',
+        defaultLicense: 'free',
+        defaultImageCount: 10,
+    },
+    imageCache: {
+        enabled: true,
+        cacheFolder: '.obsidian/plugins/image-gin/cache',
+        maxCacheSize: 100, // 100 MB
+        autoCleanup: true,
+        cleanupDays: 30,
     },
 };
 
@@ -458,5 +488,180 @@ export class ImageGinSettingTab extends PluginSettingTab {
                     this.plugin.settings.imageKit.convertToWebp = value;
                     await this.plugin.saveSettings();
                 }));
+
+        // Freepik Settings Section
+        containerEl.createEl('h3', { text: 'Freepik Image Search' });
+
+        // Freepik Enable Toggle
+        new Setting(containerEl)
+            .setName('Enable Freepik Integration')
+            .setDesc('Enable Freepik image search functionality')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.freepik.enabled)
+                .onChange(async (value) => {
+                    this.plugin.settings.freepik.enabled = value;
+                    await this.plugin.saveSettings();
+                    this.display(); // Refresh to show/hide dependent settings
+                }));
+
+        if (this.plugin.settings.freepik.enabled) {
+            // Freepik API Key
+            new Setting(containerEl)
+                .setName('Freepik API Key')
+                .setDesc('Your Freepik API key for accessing the image search service')
+                .addText(text => text
+                    .setPlaceholder('Enter your Freepik API key')
+                    .setValue(this.plugin.settings.freepik.apiKey)
+                    .onChange(async (value) => {
+                        this.plugin.settings.freepik.apiKey = value;
+                        await this.plugin.saveSettings();
+                    }));
+
+            // Default License Type
+            new Setting(containerEl)
+                .setName('Default License Type')
+                .setDesc('Default license type for Freepik image searches')
+                .addDropdown(dropdown => dropdown
+                    .addOption('free', 'Free')
+                    .addOption('premium', 'Premium')
+                    .setValue(this.plugin.settings.freepik.defaultLicense)
+                    .onChange(async (value) => {
+                        this.plugin.settings.freepik.defaultLicense = value as 'free' | 'premium';
+                        await this.plugin.saveSettings();
+                    }));
+
+            // Default Image Count
+            new Setting(containerEl)
+                .setName('Default Image Count')
+                .setDesc('Default number of images to fetch in search results (1-50)')
+                .addSlider(slider => slider
+                    .setLimits(1, 50, 1)
+                    .setValue(this.plugin.settings.freepik.defaultImageCount)
+                    .setDynamicTooltip()
+                    .onChange(async (value) => {
+                        this.plugin.settings.freepik.defaultImageCount = value;
+                        await this.plugin.saveSettings();
+                    }));
+        }
+
+        // === IMAGE CACHE SETTINGS ===
+        containerEl.createEl('h2', { text: '🗂️ Image Cache Settings' });
+        
+        // Image Cache Enable Toggle
+        new Setting(containerEl)
+            .setName('Enable Image Caching')
+            .setDesc('Cache external images locally to bypass CSP restrictions and enable offline viewing')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.imageCache.enabled)
+                .onChange(async (value) => {
+                    this.plugin.settings.imageCache.enabled = value;
+                    await this.plugin.saveSettings();
+                    this.display(); // Refresh to show/hide dependent settings
+                }));
+
+        if (this.plugin.settings.imageCache.enabled) {
+            // Cache Folder
+            new Setting(containerEl)
+                .setName('Cache Folder')
+                .setDesc('Folder path where cached images will be stored (relative to vault root)')
+                .addText(text => text
+                    .setPlaceholder('.obsidian/plugins/image-gin/cache')
+                    .setValue(this.plugin.settings.imageCache.cacheFolder)
+                    .onChange(async (value) => {
+                        this.plugin.settings.imageCache.cacheFolder = value;
+                        await this.plugin.saveSettings();
+                    }));
+
+            // Max Cache Size
+            new Setting(containerEl)
+                .setName('Max Cache Size (MB)')
+                .setDesc('Maximum size of the image cache in megabytes')
+                .addText(text => text
+                    .setPlaceholder('100')
+                    .setValue(this.plugin.settings.imageCache.maxCacheSize.toString())
+                    .onChange(async (value) => {
+                        const num = parseInt(value, 10);
+                        if (!isNaN(num) && num > 0) {
+                            this.plugin.settings.imageCache.maxCacheSize = num;
+                            await this.plugin.saveSettings();
+                        }
+                    }));
+
+            // Auto Cleanup
+            new Setting(containerEl)
+                .setName('Auto Cleanup')
+                .setDesc('Automatically clean up old cached images')
+                .addToggle(toggle => toggle
+                    .setValue(this.plugin.settings.imageCache.autoCleanup)
+                    .onChange(async (value) => {
+                        this.plugin.settings.imageCache.autoCleanup = value;
+                        await this.plugin.saveSettings();
+                        this.display(); // Refresh to show/hide cleanup days setting
+                    }));
+
+            if (this.plugin.settings.imageCache.autoCleanup) {
+                // Cleanup Days
+                new Setting(containerEl)
+                    .setName('Cleanup Days')
+                    .setDesc('Remove cached images older than this many days')
+                    .addText(text => text
+                        .setPlaceholder('30')
+                        .setValue(this.plugin.settings.imageCache.cleanupDays.toString())
+                        .onChange(async (value) => {
+                            const num = parseInt(value, 10);
+                            if (!isNaN(num) && num > 0) {
+                                this.plugin.settings.imageCache.cleanupDays = num;
+                                await this.plugin.saveSettings();
+                            }
+                        }));
+            }
+
+            // Clear Cache Button
+            new Setting(containerEl)
+                .setName('Clear Cache')
+                .setDesc('Remove all cached images to free up space')
+                .addButton(button => button
+                    .setButtonText('Clear Cache')
+                    .setWarning()
+                    .onClick(async () => {
+                        try {
+                            // Import and use the ImageCacheService
+                            const { ImageCacheService } = await import('../services/imageCacheService');
+                            const cacheService = new ImageCacheService(this.app, this.plugin.settings);
+                            await cacheService.clearCache();
+                            new Notice('Image cache cleared successfully');
+                        } catch (error) {
+                            console.error('Failed to clear cache:', error);
+                            new Notice('Failed to clear image cache');
+                        }
+                    }));
+
+            // Cache Stats
+            const statsDiv = containerEl.createDiv('cache-stats');
+            statsDiv.style.marginTop = '10px';
+            statsDiv.style.padding = '10px';
+            statsDiv.style.backgroundColor = 'var(--background-secondary)';
+            statsDiv.style.borderRadius = '5px';
+            
+            // Load and display cache stats
+            this.loadCacheStats(statsDiv);
+        }
+    }
+
+    private async loadCacheStats(container: HTMLElement) {
+        try {
+            const { ImageCacheService } = await import('../services/imageCacheService');
+            const cacheService = new ImageCacheService(this.app, this.plugin.settings);
+            const stats = cacheService.getCacheStats();
+            
+            container.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 5px;">Cache Statistics</div>
+                <div>Files: ${stats.totalImages}</div>
+                <div>Size: ${stats.cacheSize}</div>
+            `;
+        } catch (error) {
+            console.error('Failed to load cache stats:', error);
+            container.innerHTML = '<div style="color: var(--text-error);">Failed to load cache statistics</div>';
+        }
     }
 }

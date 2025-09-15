@@ -1,8 +1,9 @@
-import { Plugin } from 'obsidian';
+import { Plugin, Notice } from 'obsidian';
 // Import modal classes
 import { CurrentFileModal } from './src/modals/CurrentFileModal';
 import { ConvertLocalImagesForCurrentFile } from './src/modals/ConvertLocalImagesForCurrentFile';
 import { BatchDirectoryConvertLocalToRemote } from './src/modals/BatchDirectoryConvertLocalToRemote';
+import { FreepikModal } from './src/modals/FreepikModal';
 import { ImageGinSettings, ImageGinSettingTab, DEFAULT_SETTINGS } from './src/settings/settings';
 
 export default class ImageGinPlugin extends Plugin {
@@ -44,6 +45,18 @@ export default class ImageGinPlugin extends Plugin {
             name: 'Batch Convert Directory Images to Remote',
             callback: () => {
                 new BatchDirectoryConvertLocalToRemote(this.app, this).open();
+            }
+        });
+
+        this.addCommand({
+            id: 'search-freepik-images',
+            name: 'Search Freepik Images',
+            callback: () => {
+                if (this.settings.freepik.enabled) {
+                    new FreepikModal(this.app, this).open();
+                } else {
+                    new Notice('Freepik integration is not enabled. Please enable it in settings.');
+                }
             }
         });
     }
