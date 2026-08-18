@@ -11,6 +11,8 @@ sibling_plan: ../../../perplexed/context-v/plans/20206-05-02_Assuring-Obsidian-C
 site_uuid: c1549e6a-15c2-4b21-b2c2-1efef62dc763
 hex_code: 5zgt7b
 date_created: 2026-05-03
+lede: "17 explicit-any sites, 2 innerHTML calls, and a hand-rolled YAML parser — tighten ESLint to error first so pnpm build surfaces the rest."
+summary: "Publishing-prep plan for image-gin, phased so ESLint is tightened to match the review bot before anything else and the resulting build failures drive the remaining work. Records what was already compliant (manifest/version sync, LICENSE, strict tsconfig, dependency purge) so those phases can be skipped. Sibling to perplexed's plan of the same shape; partly superseded by the 2026-05-10 final cleanup round."
 ---
 
 # Plan — Bring Image Gin up to Obsidian Community-Plugin Publishing Standards

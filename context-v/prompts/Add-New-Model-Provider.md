@@ -1,6 +1,7 @@
 ---
 title: "Prompt — Add a New Model Provider to Image Gin"
-lede: "The agent-facing instruction for adding a new image-generation provider to Image Gin. Hands the work to a coding agent with the canonical blueprint to follow, the case-study prior art (Recraft, Ideogram, Magnific), and the exact files to touch — so the agent isn't reinventing the shape on every new vendor."
+lede: >-
+  Agent-facing instruction for adding an image provider to Image Gin: the blueprint, the Recraft/Ideogram/Magnific prior art, the exact files.
 date_created: 2026-05-04
 date_modified: 2026-05-05
 status: Authoritative
