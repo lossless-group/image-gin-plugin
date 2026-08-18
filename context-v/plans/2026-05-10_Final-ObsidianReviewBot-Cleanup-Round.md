@@ -11,6 +11,9 @@ related:
   - ../../../../context-v/issues/Obsidian-Review-Bot-Feedback-on-Perplexed-Submission.md
 pr: https://github.com/obsidianmd/obsidian-releases/pull/12524
 last_bot_scan_commit: cfbceba2992a2da62ba87eb6346e3e44cbfd945d
+site_uuid: 6514eafd-80a0-4034-ba83-54c35c63d424
+hex_code: dy2ql3
+date_created: 2026-05-10
 ---
 
 # Plan — Final ObsidianReviewBot cleanup round for image-gin v0.2.x

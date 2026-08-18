@@ -12,6 +12,9 @@ reference_implementation:
   - /Users/mpstaton/code/lossless-monorepo/image-gin/src/modals/CurrentFileModal.ts
 external_reference:
   - /Users/mpstaton/code/lossless-monorepo/astro-knots/sites/fullstack-vc/src/utils/api-connectors/ideogram.ts
+site_uuid: e2ab6c81-9b27-46c3-8698-ff161ae1ef73
+hex_code: 6bkhzd
+date_created: 2026-05-03
 ---
 
 # Blueprint — Add a New Image-Generation Provider

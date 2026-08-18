@@ -8,6 +8,9 @@ authors:
 augmented_with: Claude Code (Opus 4.7, 1M context)
 related_reference: ../../../cite-wide/context-v/reminders/Obsidian-Type-Safety.md
 sibling_plan: ../../../perplexed/context-v/plans/20206-05-02_Assuring-Obsidian-Community-Plugin-Requirements.md
+site_uuid: c1549e6a-15c2-4b21-b2c2-1efef62dc763
+hex_code: 5zgt7b
+date_created: 2026-05-03
 ---
 
 # Plan — Bring Image Gin up to Obsidian Community-Plugin Publishing Standards

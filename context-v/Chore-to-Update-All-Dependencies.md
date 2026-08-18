@@ -1,3 +1,16 @@
+---
+site_uuid: 7f75aa30-6591-4f97-89f9-65c915208bec
+hex_code: cm2a8b
+title: Chore to Update All Dependencies
+date_created: 2026-05-02
+date_authored_initial_draft: 2026-05-02
+date_authored_current_draft: 2026-05-02
+authors:
+  - Michael Staton
+at_semantic_version: 0.0.1.0
+tags:
+  - Context-Vigilance
+---
 
   1. tsconfig.json — TS 6 deprecated moduleResolution: "node" and bare baseUrl. Switched to
   moduleResolution: "bundler" (correct for esbuild) and dropped baseUrl + paths (the paths entry just
