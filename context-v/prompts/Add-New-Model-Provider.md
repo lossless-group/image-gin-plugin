@@ -24,6 +24,7 @@ site_uuid: aeab4285-bba3-4fa9-906a-c07f205b9844
 hex_code: keussd
 date_authored_initial_draft: 2026-05-05
 date_authored_current_draft: 2026-05-05
+publish: true
 ---
 
 # Prompt — Add a New Model Provider to Image Gin
